@@ -1,5 +1,6 @@
 
 const baseApi = require('./api/baseApi');
+const mogodbApi = require('./api/mogodbApi');
 const {port} = require('./config');
 const fs = require('fs');
 const path = require('path');
@@ -21,9 +22,10 @@ app.all('*', function (req, res, next) {
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
- 
+
 // 后端api路由
-app.use('/api/base', baseApi);
+app.use('/api/base', mogodbApi);
+// app.use('/api/base', baseApi);
  
 // 监听端口
 app.listen(port);
