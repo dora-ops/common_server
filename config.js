@@ -5,7 +5,7 @@ module.exports = {
       host:'114.55.142.72',
       user: 'root', 
       password: '#$ERDFCV5tgb', // root 密码
-      database: 'case', // 数据库名
+      database: 'graduate', // 数据库名
       port: '3306'
     },
     port:'3000'
