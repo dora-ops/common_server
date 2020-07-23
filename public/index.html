@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<script type="text/javascript" src="http://echarts.baidu.com/examples/vendors/echarts/echarts.min.js"></script>
+</head>
+
+<body>
+	<div id="main" style="width: 100%;height:500px;"></div>
+	
+</body>
+<style>
+</style>
+<script>
+	function dateFormat(fmt, date) {
+		let ret;
+		const opt = {
+			"Y+": date.getFullYear().toString(),        // 年
+			"m+": (date.getMonth() + 1).toString(),     // 月
+			"d+": date.getDate().toString(),            // 日
+			"H+": date.getHours().toString(),           // 时
+			"M+": date.getMinutes().toString(),         // 分
+			"S+": date.getSeconds().toString()          // 秒
+			// 有其他格式化字符需求可以继续添加，必须转化成字符串
+		};
+		for (let k in opt) {
+			ret = new RegExp("(" + k + ")").exec(fmt);
+			if (ret) {
+				fmt = fmt.replace(ret[1], (ret[1].length == 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
+			};
+		};
+		return fmt;
+	}
+
+
+	window.xData = [];
+	window.dData = [];
+	window.fData = [];
+	var data = JSON.stringify({
+		"table": "temperature"
+	});
+
+	var xhr = new XMLHttpRequest();
+	xhr.withCredentials = true;
+
+	xhr.addEventListener("readystatechange", function () {
+		if (this.readyState === 4) {
+			console.log(this.responseText);
+
+			var all = JSON.parse(this.responseText)
+			for (let i = 0; i < all.length; i++) {
+				window.xData.push(all[i].time)
+				window.dData.push(all[i].d)
+				window.fData.push(all[i].f)
+			}
+		}
+	});
+
+	xhr.open("POST", "http://localhost:3000/api/base/query");
+	xhr.setRequestHeader("content-type", "application/json");
+	xhr.setRequestHeader("cache-control", "no-cache");
+	xhr.setRequestHeader("postman-token", "9048e79a-8f26-985b-57cf-ee8395f661d4");
+
+	xhr.send(data);
+
+	setInterval(function () {
+		var time = dateFormat("YYYY-mm-dd HH:MM:SS", new Date())
+		var d = 60 * (0.5 - Math.random()).toFixed(3)
+		var f = 800 * (Math.random() + 0.5).toFixed(3)
+		if (window.xData.length >= 100) {
+			window.xData.shift()
+			window.dData.shift()
+			window.fData.shift()
+		}
+
+		window.xData.push(time)
+		window.dData.push(d)
+		window.fData.push(f)
+		addData({ table: 'temperature', data: { time: time, d: d, f: f } });
+		getChart(window.xData, window.dData, window.fData)
+	}, 1000);
+
+	getChart(xData, dData, fData)
+
+	function addData(params) {
+
+		var xhr = new XMLHttpRequest();
+		xhr.withCredentials = true;
+
+		xhr.addEventListener("readystatechange", function () {
+			if (this.readyState === 4) {
+				console.log(this.responseText);
+			}
+		});
+
+		xhr.open("POST", "http://localhost:3000/api/base/add");
+		xhr.setRequestHeader("content-type", "application/json");
+		xhr.setRequestHeader("cache-control", "no-cache");
+		xhr.send(JSON.stringify(params));
+	}
+
+	function getChart(arr_Time, arr_Temperature, arr_Humidity) {
+		let myChart = echarts.init(document.getElementById('main'));
+		let option = {
+			title: {
+				text: '温度图',
+				x: 'center',
+				align: 'right'
+			},
+			grid: {
+				bottom: 80,
+				left: "5%",
+				width: "85%"
+			},
+			toolbox: {
+				right: 160,
+				feature: {
+					dataZoom: {
+						yAxisIndex: 'none'
+					},
+					restore: {},
+					saveAsImage: {}
+				}
+			},
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'cross',
+					animation: false,
+					label: {
+						backgroundColor: '#505765'
+					}
+				}
+			},
+			legend: {
+				data: ['温度'],
+				x: 'left',
+				left: 60
+			},
+			dataZoom: [{
+				show: true,
+				realtime: true,
+				filterMode: 'filter',
+				start: 0,
+				end: 100
+			},
+			{
+				type: 'inside',
+				realtime: true,
+				start: 0,
+				end: 100
+			}
+			],
+			xAxis: [{
+				type: 'category',
+				axisLine: {
+					onZero: false
+				},
+				data: arr_Time
+			}],
+			yAxis: [{
+				name: '温度℃',
+				type: 'value',
+				axisLabel: {
+					formatter: '{value} °C'
+				}
+			},
+			],
+			series: [{
+				name: '温度',
+				type: 'line',
+				animation: false,
+				lineStyle: {
+					normal: {
+						width: 1
+					}
+				},
+				data: arr_Temperature
+			}]
+		};
+		myChart.setOption(option);
+	}
+</script>
+
+</html>

@@ -24,8 +24,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 // 后端api路由
-app.use('/api/base', mogodbApi);
-app.use('/api/base', baseApi);
+// app.use('/api/base', mogodbApi);
+// app.use('/api/base', baseApi);
  
 // 监听端口
 app.listen(port);
