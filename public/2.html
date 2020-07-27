@@ -56,6 +56,8 @@
         }
         imageList.push(item)
     })
+    var msg = ["qq", "wx", "qq", "zhifubao"]
+    imageList = imageList.concat(msg)
     var canvas = document.createElement("canvas");
 
     var iCtx = canvas.getContext("2d");
@@ -120,6 +122,9 @@
         return newImage
     };
 
+    //图间距
+    var dis = 0
+
     function drawAndShareImage() {
 
 
@@ -140,10 +145,15 @@
             if (imageList.length == 0) {
                 return
             }
-            if (imageList.length == digist.length) {
+            if (imageList.length == digist.length + msg.length) {
                 sw = 50
                 sh = 372
                 prefix = '2/y_'
+            } else if (imageList.length == msg.length) {
+                sw = 162
+                sh = 22
+                prefix = '2/'
+                dis = 20
             }
             var item = imageList.shift()
             var image = new Image();
@@ -151,7 +161,7 @@
             image.crossOrigin = 'Anonymous'
             image.onload = () => {
                 ctx.drawImage(image, sw, sh);
-                sw += image.width
+                sw += image.width + dis
                 loadImage(imageList)
             }
         }
