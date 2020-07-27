@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图像处理</title>
+
+
+</head>
+
+<body>
+    <canvas id="pic"></canvas>
+</body>
+
+<script>
+
+    //自动识别切割
+    function dateFormat(fmt, date) {
+        let ret;
+        const opt = {
+            "Y+": date.getFullYear().toString(),        // 年
+            "m+": (date.getMonth() + 1).toString(),     // 月
+            "d+": date.getDate().toString(),            // 日
+            "H+": date.getHours().toString(),           // 时
+            "M+": date.getMinutes().toString(),         // 分
+            "S+": date.getSeconds().toString()          // 秒
+            // 有其他格式化字符需求可以继续添加，必须转化成字符串
+        };
+        for (let k in opt) {
+            ret = new RegExp("(" + k + ")").exec(fmt);
+            if (ret) {
+                fmt = fmt.replace(ret[1], (ret[1].length == 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
+            };
+        };
+        return fmt;
+    }
+    var current = new Date()
+    let now = dateFormat("YYYY-mm-dd HH:MM:SS", current)
+
+
+    var imageList = []
+    if (current.getHours() >= 12) {
+        current.setHours(current.getHours() - 12)
+    }
+    var sys_time = dateFormat("HH:MM", current)
+
+    for (let i = 0; i < sys_time.length; i++) {
+        const e = sys_time[i] == ':' ? 'mao' : sys_time[i];
+        imageList.push(e)
+    }
+    var sys_point = { sw: 46, sh: 26 }
+    var digist = "1450123.87".match(/./g)
+    digist.forEach(item => {
+        if (item == '.') {
+            item = 'dian'
+        }
+        imageList.push(item)
+    })
+    var canvas = document.createElement("canvas");
+
+    var iCtx = canvas.getContext("2d");
+
+    var prefix = '2/'
+
+    /***********************************************
+	 *	<h2>getRectImageData</h2>
+	 *	获取特定像素的区域
+	 *	<b>方法</b>
+	 *	ImageData imread(Mat in)
+	 *	<b>参数</b>
+	 *	in - 矩阵.
+	 */
+    var getRectImageData = function (__image) {
+        var width = __image.width,
+            height = __image.height;
+
+        iCtx.drawImage(__image, 0, 0);
+        var imageData = iCtx.getImageData(0, 0, width, height)
+
+        var res = [Infinity, Infinity, 0, 0]
+        //提取矩形像素四个坐标
+        for (let i = 0; i < imageData.height; i++) {
+            for (let j = 0; j < imageData.width; j++) {
+                var k = i * imageData.width + j
+                var min = Math.min(imageData.data[k * 4], imageData.data[k * 4 + 1], imageData.data[k * 4 + 2])
+                if (min >= 220) {
+                    res[0] = Math.min(i, res[0])
+                    res[1] = Math.min(j, res[1])
+                    res[2] = Math.max(i, res[2])
+                    res[3] = Math.max(j, res[3])
+                }
+            }
+        }
+        height = res[2] - res[0] + 1 + 2, width = res[3] - res[1] + 1 + 2
+
+        var cur = 12
+        //根据区域增长多余的部分
+        var newImage = iCtx.createImageData(width, cur)
+        imageData = iCtx.getImageData(res[1] - 1, res[0] - 1, width, height)
+        for (let i = 0; i < newImage.height; i++) {
+
+            for (let j = 0; j < newImage.width; j++) {
+                var row
+                if (i >= imageData.height) {
+                    row = i % imageData.height
+                } else {
+                    row = i
+                }
+                var k = row * imageData.width + j
+
+                newImage.data[k * 4] = imageData.data[k * 4]
+                newImage.data[k * 4 + 1] = imageData.data[k * 4 + 1]
+                newImage.data[k * 4 + 2] = imageData.data[k * 4 + 2]
+            }
+        }
+        //更新图像且重新获取
+        iCtx.putImageData(newImage, res[1] - 1, res[0] - 1 - (cur - height))
+        newImage = iCtx.getImageData(0, 0, __image.width, __image.height)
+        iCtx.clearRect(0, 0, width, height);
+        return newImage
+    };
+
+    function drawAndShareImage() {
+
+
+        var pic = document.getElementById("pic");
+        var ctx = pic.getContext("2d");
+
+        var myImage = new Image();
+        myImage.src = "./2/main.jpg";    //背景图片  你自己本地的图片或者在线图片
+        myImage.crossOrigin = 'Anonymous';
+
+        var battery = new Image();
+        battery.src = "./2/battery.png";    //背景图片  你自己本地的图片或者在线图片
+        battery.crossOrigin = 'Anonymous';
+
+        //余额位置
+        var sw = sys_point.sw, sh = sys_point.sh
+        function loadImage(imageList) {
+            if (imageList.length == 0) {
+                return
+            }
+            if (imageList.length == digist.length) {
+                sw = 50
+                sh = 372
+                prefix = '2/y_'
+            }
+            var item = imageList.shift()
+            var image = new Image();
+            image.src = prefix + item + ".png"
+            image.crossOrigin = 'Anonymous'
+            image.onload = () => {
+                ctx.drawImage(image, sw, sh);
+                sw += image.width
+                loadImage(imageList)
+            }
+        }
+
+        myImage.onload = () => {
+            pic.width = myImage.width;
+            pic.height = myImage.height;
+            ctx.drawImage(myImage, 0, 0)
+
+
+
+            // var imageData = cv.imread(battery);
+            // ctx.drawImage(battery, 567, 12)
+            var imageData = getRectImageData(battery)
+            // 更新有延迟
+            ctx.putImageData(imageData, 1010, 22)
+            // var newImage = createNewCanvas(imageData, width, height);
+            // var batteryImage = new Image()
+            // batteryImage.src = newImage
+            // batteryImage.onload = () => {
+            //     context.drawImage(batteryImage, 0, 12);
+            // }
+
+
+            loadImage(imageList)
+
+
+
+
+        }
+
+
+    }
+    drawAndShareImage()
+
+
+</script>
+
+
+</html>
