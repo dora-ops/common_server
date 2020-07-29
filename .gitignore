@@ -16,6 +16,6 @@ package-lock.json
 *.rar
 *.zip
 *.mp4
-*.png
+
 mock/
 # public
