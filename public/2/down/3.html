@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图像处理</title>
+
+
+</head>
+
+<body>
+
+</body>
+
+<script>
+
+    var allImage = [
+        {
+            file: '3.jpg', picList: [
+                // { x1: 66, y1: 26, x2: 75, y2: 56, name: 'mao' },
+                // { x1: 75, y1: 26, x2: 96, y2: 56, name: '1' },
+                { x1: 1011, y1: 22, x2: 1031, y2: 58, name: 'battery2' },
+            ]
+        }, 
+        // {
+        //     file: '4.jpg', picList: [
+        //         { x1: 75, y1: 26, x2: 97, y2: 56, name: '5' }
+        //     ]
+        // }, 
+        // {
+        //     file: '5.jpg', picList: [
+        //         { x1: 97, y1: 26, x2: 117, y2: 56, name: '9' }
+        //     ]
+        // },
+        // {
+        //     file: '7.jpg', picList: [
+        //         { x1: 75, y1: 26, x2: 97, y2: 56, name: '2' },
+        //         { x1: 97, y1: 26, x2: 117, y2: 56, name: '0' },
+        //         { x1: 112, y1: 372, x2: 154, y2: 478, name: 'y_mao' },
+        //         { x1: 154, y1: 372, x2: 229, y2: 478, name: 'y_2' },
+        //         { x1: 229, y1: 372, x2: 305, y2: 478, name: 'y_6' }
+        //     ]
+        // },
+        // {
+        //     file: '6.jpg', picList: [
+        // { x1: 97, y1: 26, x2: 118, y2: 56, name: '3' },
+        // { x1: 75, y1: 26, x2: 97, y2: 56, name: '4' }
+        //     ]
+        // },
+        // {
+        //     file: '8.jpg', picList: [
+        //         { x1: 155, y1: 372, x2: 230, y2: 478, name: 'y_3' },
+        //         { x1: 230, y1: 372, x2: 303, y2: 478, name: 'y_7' },
+        //         { x1: 97, y1: 26, x2: 118, y2: 56, name: '6' }
+        //     ]
+        // },
+        // {
+        //     file: '9.jpg', picList: [
+        //         { x1: 154, y1: 372, x2: 236, y2: 478, name: 'y_4' },
+        //         { x1: 236, y1: 372, x2: 312, y2: 478, name: 'y_8' },
+        //         { x1: 97, y1: 26, x2: 118, y2: 56, name: '7' }
+        //     ]
+        // },
+        // {
+        //     file: '10.jpg', picList: [
+        //         { x1: 97, y1: 26, x2: 118, y2: 56, name: '8' },
+        //         { x1: 154, y1: 372, x2: 230, y2: 478, name: 'y_5' },
+        //         { x1: 230, y1: 372, x2: 304, y2: 478, name: 'y_9' },
+        //     ]
+        // },
+        // {
+        //     file: '11.jpg', picList: [
+        //         // { x1: 306, y1: 372, x2: 358, y2: 478, name: 'y_1' },
+        //         // { x1: 111, y1: 372, x2: 189, y2: 478, name: 'y_0' },
+                
+        //         // { x1: 162, y1: 22, x2: 197, y2: 58, name: 'qq' },
+        //         // { x1: 217, y1: 22, x2: 254, y2: 58, name: 'wx' },
+        //     ]
+        // },
+        // {
+        //     file: '12.jpg', picList: [
+        //         { x1: 307, y1: 22, x2: 344, y2: 58, name: 'zhifubao' },
+        //     ]
+        // },
+        {
+            file: '13.jpg', picList: [
+                // { x1: 111, y1: 372, x2: 152, y2: 490, name: 'y_dou' },
+                // { x1: 1011, y1: 22, x2: 1031, y2: 58, name: 'battery' },
+            ]
+        },
+
+    ]
+
+    function downloadImage(allImage) {
+        if (allImage.length == 0) {
+            return
+        }
+        const f = allImage.shift();
+        var pic = document.createElement("canvas");
+        var ctx = pic.getContext("2d");
+
+        var myImage = new Image();
+        myImage.src = f.file;    //背景图片  你自己本地的图片或者在线图片
+        myImage.crossOrigin = 'Anonymous';
+
+        var picList = f.picList
+        myImage.onload = () => {
+            pic.width = myImage.width;
+            pic.height = myImage.height;
+            ctx.drawImage(myImage, 0, 0)
+            for (let i = 0; i < picList.length; i++) {
+                const p = picList[i];
+                var imageData = ctx.getImageData(p.x1, p.y1, p.x2 - p.x1, p.y2 - p.y1)
+                var canvas = document.createElement("canvas");
+                var context = canvas.getContext("2d");
+                canvas.width = imageData.width
+                canvas.height = imageData.height
+                context.putImageData(imageData, 0, 0)
+                var url = canvas.toDataURL('image/png')
+                var a = document.createElement('a')
+                // 创建一个单击事件
+                var event = new MouseEvent('click')
+
+                // 将a的download属性设置为我们想要下载的图片名称，若name不存在则使用‘下载图片名称’作为默认名称
+                a.download = p.name
+                // 将生成的URL设置为a.href属性
+                a.href = url
+
+                // 触发a的单击事件
+                a.dispatchEvent(event)
+
+                document.body.appendChild(canvas)
+                downloadImage(allImage)
+            }
+        }
+
+    }
+
+    downloadImage(allImage)
+
+
+</script>
+
+
+</html>

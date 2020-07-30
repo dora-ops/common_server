@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图像处理</title>
+</head>
+<style>
+    .pos_fixed {
+        position: fixed;
+        top: 20px;
+        right: 10px;
+    }
+
+    .row {
+        margin-top: 10px
+    }
+</style>
+
+<body>
+
+    <canvas id="pic"></canvas>
+    <div class="pos_fixed">
+        <div class="row">
+            电源类型
+            <select id="bat">
+                <option value="battery0">battery0</option>
+                <option value="battery1">battery1</option>
+                <option value="battery2">battery2</option>
+                <!-- <option value="battery3">battery3</option> -->
+            </select>
+        </div>
+        <div class="row">
+            信息
+            <input type="checkbox" name="msg" value="qq" />qq
+            <input type="checkbox" name="msg" value="zhifubao" />zhifubao
+            <input type="checkbox" name="msg" value="wx" />wx
+        </div>
+        <div class="row">
+            金额
+            <input type="text" id="amount" />
+        </div>
+        <div class="row">
+            <button onclick="drawAndShareImage()">更新</button>
+        </div>
+    </div>
+</body>
+<script src="../core.js"></script>
+<script>
+    var imageList = [], sys_time, digist, msg = []
+
+    function setData() {
+        var current = new Date()
+        let now = dateFormat("YYYY-mm-dd HH:MM:SS", current)
+        if (current.getHours() >= 12) {
+            current.setHours(current.getHours() - 12)
+        }
+        sys_time = dateFormat("HH:MM", current)
+
+        for (let i = 0; i < sys_time.length; i++) {
+            const e = sys_time[i] == ':' ? 'mao' : sys_time[i];
+            imageList.push(e)
+        }
+        // var amount = ""
+        var amount = document.getElementById("amount").value;
+        amount = amount ? amount : "1450123.87"
+        amount = formatCurrency(amount)
+        digist = amount.match(/./g)
+        digist.forEach(item => {
+            if (item == '.') {
+                item = 'dian'
+            }
+            if (item == ',') {
+                item = 'dou'
+            }
+            imageList.push(item)
+        })
+        msg = ["wx", "qq"]
+        var msgList = document.getElementsByName("msg");
+        msgList.forEach(item => {
+            if (item.checked) {
+                msg.push(item.value)
+            }
+        })
+        msg = shuffle(msg)
+        imageList = imageList.concat(msg)
+    }
+
+
+
+
+    //1.常量部分
+    var sys_point = { sw: 46, sh: 26 }
+    var prefix = ''
+    //头部信息间距 
+    var canvas = document.createElement("canvas");
+    var iCtx = canvas.getContext("2d");
+    var pic = document.getElementById("pic");
+    var ctx = pic.getContext("2d");
+
+    //公共变量
+    var sw, sh, dis = 0
+
+
+
+    function drawAndShareImage() {
+        setData()
+
+
+        var myImage = new Image();
+        myImage.src = prefix + "main.jpg";    //背景图片  你自己本地的图片或者在线图片
+        myImage.crossOrigin = 'Anonymous';
+
+        var battery = new Image();
+        var bat = document.getElementById("bat").value;
+        bat = bat ? bat : "battery0"
+        battery.src = prefix + bat + ".png";    //背景图片  你自己本地的图片或者在线图片
+        battery.crossOrigin = 'Anonymous';
+
+
+        sw = sys_point.sw
+        sh = sys_point.sh
+        dis = 0
+        myImage.onload = () => {
+            pic.width = myImage.width;
+            pic.height = myImage.height;
+
+
+            ctx.drawImage(myImage, 0, 0)
+            ctx.drawImage(battery, 1010, 22)
+            // var imageData = getRectImageData(battery)
+            // 更新有延迟
+            // ctx.putImageData(imageData, 1010, 22)
+            loadImage(imageList)
+            // imageData.onload = () => {
+            //     ctx.drawImage(imageData, 1010, 22)
+            //     loadImage(imageList)
+            // }
+
+        }
+
+
+
+    }
+    function loadImage(imageList) {
+        if (imageList.length == 0) {
+            return
+        }
+        if (imageList.length == digist.length + msg.length) {
+            sw = 50
+            sh = 372
+            prefix = 'y_'
+        } else if (imageList.length == msg.length) {
+            sw = 162
+            sh = 22
+            prefix = ''
+            dis = 20
+        }
+        var item = imageList.shift()
+        var image = new Image();
+        image.src = prefix + item + ".png"
+        image.crossOrigin = 'Anonymous'
+        image.onload = () => {
+            ctx.drawImage(image, sw, sh);
+            sw += image.width + dis
+            loadImage(imageList)
+        }
+    }
+    /***********************************************
+   *	<h2>getRectImageData</h2>
+   *	获取特定像素的区域
+   *	<b>方法</b>
+   *	ImageData imread(Mat in)
+   *	<b>参数</b>
+   *	in - 矩阵.
+   */
+    var getRectImageData = function (__image) {
+        var width = __image.width,
+            height = __image.height;
+
+        iCtx.drawImage(__image, 0, 0);
+        var imageData = iCtx.getImageData(0, 0, width, height)
+
+        var res = [Infinity, Infinity, 0, 0]
+        //提取矩形像素四个坐标
+        for (let i = 0; i < imageData.height; i++) {
+            for (let j = 0; j < imageData.width; j++) {
+                var k = i * imageData.width + j
+                var min = Math.min(imageData.data[k * 4], imageData.data[k * 4 + 1], imageData.data[k * 4 + 2])
+                if (min >= 220) {
+                    res[0] = Math.min(i, res[0])
+                    res[1] = Math.min(j, res[1])
+                    res[2] = Math.max(i, res[2])
+                    res[3] = Math.max(j, res[3])
+                }
+            }
+        }
+        height = res[2] - res[0] + 1 + 2, width = res[3] - res[1] + 1 + 2
+
+        var cur = 30
+        //根据区域增长多余的部分
+        var newImage = iCtx.createImageData(width, cur)
+        imageData = iCtx.getImageData(res[1] - 1, res[0] - 1, width, height)
+        for (let i = 0; i < newImage.height; i++) {
+
+            for (let j = 0; j < newImage.width; j++) {
+                var row
+                if (i >= imageData.height) {
+                    row = i % imageData.height
+                } else {
+                    row = i
+                }
+                var k = row * imageData.width + j
+
+                newImage.data[k * 4] = imageData.data[k * 4]
+                newImage.data[k * 4 + 1] = imageData.data[k * 4 + 1]
+                newImage.data[k * 4 + 2] = imageData.data[k * 4 + 2]
+            }
+        }
+        //更新图像且重新获取
+        iCtx.putImageData(newImage, res[1] - 1, res[0] - 1 - (cur - height))
+        newImage = iCtx.getImageData(0, 0, __image.width, __image.height)
+        iCtx.clearRect(0, 0, width, height);
+        // var image = new Image();
+        // image.src = canvas.toDataURL("image/png");
+        // return image
+        return newImage
+    };
+
+    drawAndShareImage()
+
+
+</script>
+
+
+</html>
