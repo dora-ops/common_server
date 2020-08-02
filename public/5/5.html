@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图像处理</title>
+
+
+</head>
+
+<body>
+
+</body>
+
+<script>
+
+    var allImage = [
+        {
+            file: '2.jpg', picList: [
+                { x1: 37, y1: 15, x2: 43, y2: 31, name: 'mao' },
+                { x1: 43, y1: 15, x2: 51, y2: 31, name: '1' },
+                { x1: 51, y1: 15, x2: 65, y2: 31, name: '9' },
+                { x1: 80, y1: 10, x2: 100, y2: 33, name: 'zhifubao' },
+                { x1: 109, y1: 10, x2: 131, y2: 33, name: 'dd' },
+                { x1: 567, y1: 10, x2: 579, y2: 33, name: 'battery' },
+                { x1: 426, y1: 295, x2: 439, y2: 320, name: '2' },
+                { x1: 439, y1: 295, x2: 452, y2: 320, name: '6' },
+                { x1: 452, y1: 295, x2: 458, y2: 320, name: 'dian' },
+                { x1: 458, y1: 295, x2: 471, y2: 320, name: '4' },
+                { x1: 471, y1: 295, x2: 483, y2: 320, name: '0' },
+            ]
+        },
+    ]
+
+    function downloadImage(allImage) {
+        if (allImage.length == 0) {
+            return
+        }
+        const f = allImage.shift();
+        var pic = document.createElement("canvas");
+        var ctx = pic.getContext("2d");
+
+        var myImage = new Image();
+        myImage.src = f.file;    //背景图片  你自己本地的图片或者在线图片
+        myImage.crossOrigin = 'Anonymous';
+
+        var picList = f.picList
+        myImage.onload = () => {
+            pic.width = myImage.width;
+            pic.height = myImage.height;
+            ctx.drawImage(myImage, 0, 0)
+            for (let i = 0; i < picList.length; i++) {
+                const p = picList[i];
+                var imageData = ctx.getImageData(p.x1, p.y1, p.x2 - p.x1, p.y2 - p.y1)
+                var canvas = document.createElement("canvas");
+                var context = canvas.getContext("2d");
+                canvas.width = imageData.width
+                canvas.height = imageData.height
+                context.putImageData(imageData, 0, 0)
+                var url = canvas.toDataURL('image/png')
+                var a = document.createElement('a')
+                // 创建一个单击事件
+                var event = new MouseEvent('click')
+
+                // 将a的download属性设置为我们想要下载的图片名称，若name不存在则使用‘下载图片名称’作为默认名称
+                a.download = p.name
+                // 将生成的URL设置为a.href属性
+                a.href = url
+
+                // 触发a的单击事件
+                a.dispatchEvent(event)
+
+                document.body.appendChild(canvas)
+                downloadImage(allImage)
+            }
+        }
+
+    }
+
+    downloadImage(allImage)
+
+
+</script>
+
+
+</html>
