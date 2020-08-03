@@ -20,7 +20,7 @@
 <body>
 
     <canvas id="pic"></canvas>
-    <div>
+    <div class="pos_fixed">
         <div class="row">
             电源类型
             <select id="bat">
@@ -45,12 +45,15 @@
             <input type="text" id="b" />
         </div>
         <div class="row">
-            昨日收益
-            <input type="text" id="s" />
+            万分收益
+            <input type="text" id="s"  value="0.4601" />
+        </div>
+        <div class="row">
+            总金额/10000*万分收益
         </div>
         <div class="row">
             七日年化
-            <input type="text" id="n" />
+            <input type="text" id="n" value="1.6860"/>
         </div>
         <div class="row">
             <button onclick="drawAndShareImage()">更新</button>
@@ -63,7 +66,7 @@
     var z_digist = {}, z_dis = []
 
     function setData() {
-        imageList = [],  zonger = []
+        imageList = [], zonger = []
         var current = new Date()
         let now = dateFormat("YYYY-mm-dd HH:MM:SS", current)
         if (current.getHours() >= 12) {
@@ -105,8 +108,8 @@
             zonger.push(b_ + item + img_suffix)
         })
 
-        // var s = ""
-        var s = document.getElementById("s").value;
+        var s = ""
+        // var s = document.getElementById("s").value;
         s = s ? s : "6.21"
         digist = s.match(/./g)
         z_dis[2] = digist.length
@@ -148,6 +151,7 @@
         })
         msg = shuffle(msg)
         imageList = imageList.concat(msg)
+        allWidth = 0, totalWidth = 0, ze_sw = 314, ze_sh = 460
     }
 
     var allWidth = 0, totalWidth = 0
@@ -231,13 +235,13 @@
         }
         if (zonger.length == z_dis[1]) {
             ze_sw = 211
-            ze_sh = 915
+            ze_sh = 914
         } else if (zonger.length == z_dis[2]) {
             ze_sw = 550
             ze_sh = 613
         } else if (zonger.length == z_dis[3]) {
             ze_sw = 718
-            ze_sh = 915
+            ze_sh = 914
         }
         var item = zonger.shift()
         var image = new Image();
