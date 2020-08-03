@@ -20,7 +20,7 @@
 <body>
 
     <canvas id="pic"></canvas>
-    <div class="pos_fixed">
+    <div id="main">
         <div class="row">
             电源类型
             <select id="bat">
@@ -45,28 +45,45 @@
             <input type="text" id="b" />
         </div>
         <div class="row">
+            昨日收益左边距
+            <input type="text" id="S_L" value="300" />
+        </div>
+        <div class="row">
             万分收益
-            <input type="text" id="s"  value="0.4601" />
+            <input type="text" id="s" value="0.4601" />
         </div>
         <div class="row">
             总金额/10000*万分收益
         </div>
         <div class="row">
             七日年化
-            <input type="text" id="n" value="1.6860"/>
+            <input type="text" id="n" value="1.6860" />
         </div>
         <div class="row">
             <button onclick="drawAndShareImage()">更新</button>
+        </div>
+        <div class="row">
+            <input id="flow" type="checkbox" onclick="setFlow()">悬浮</input>
         </div>
     </div>
 </body>
 <script src="../core.js"></script>
 <script>
+
+    function setFlow() {
+        var checked = document.getElementById("flow").checked;
+        if (!checked) {
+            document.getElementById("main").className = ''
+        } else {
+            document.getElementById("main").className = 'pos_fixed'
+        }
+    }
+
     var imageList = [], sys_time, digist, msg = [], zonger = []
     var z_digist = {}, z_dis = []
 
     function setData() {
-        imageList = [], zonger = []
+        imageList = [], zonger = [], z_dis = []
         var current = new Date()
         let now = dateFormat("YYYY-mm-dd HH:MM:SS", current)
         if (current.getHours() >= 12) {
@@ -110,10 +127,13 @@
 
         var s = ""
         // var s = document.getElementById("s").value;
-        s = s ? s : "6.21"
+        zonger.push("s_L.png")
+        zonger.push("s_F.png")
+        z_dis.push(2)
+
+        s = s ? s : "436.21"
         digist = s.match(/./g)
-        z_dis[2] = digist.length
-        z_dis[1] += digist.length
+        z_dis.push(digist.length)
         digist.forEach(item => {
             if (item == '.') {
                 item = 'dian'
@@ -123,14 +143,14 @@
             }
             zonger.push(s_ + item + img_suffix)
         })
-
+        zonger.push("s_Y.png")
+        zonger.push("s_R.png")
+        z_dis.push(2)
         // var n = ""
         var n = document.getElementById("n").value;
         n = n ? n : "1.6860"
         digist = n.match(/./g)
-        z_dis[3] = digist.length
-        z_dis[2] += digist.length
-        z_dis[1] += digist.length
+        z_dis.push(digist.length)
 
         digist.forEach(item => {
             if (item == '.') {
@@ -141,6 +161,9 @@
             }
             zonger.push(n_ + item + img_suffix)
         })
+        for (let i = z_dis.length - 2; i >= 0; i--) {
+            z_dis[i] = z_dis[i + 1] + z_dis[i]
+        }
 
         msg = ["wx", "wg"]
         var msgList = document.getElementsByName("msg");
@@ -154,7 +177,7 @@
         allWidth = 0, totalWidth = 0, ze_sw = 314, ze_sh = 460
     }
 
-    var allWidth = 0, totalWidth = 0
+    var allWidth = 0, totalWidth = 0, s_width = 0
 
     function setZ(digist) {
         if (digist.length == 0) {
@@ -214,7 +237,7 @@
             totalWidth = pic.width = myImage.width;
             pic.height = myImage.height;
 
-            setZ(zonger.slice(0, z_dis[0]))
+            setZ(zonger.slice(0, z_dis[0] - z_dis[1]))
 
 
             ctx.drawImage(myImage, 0, 0)
@@ -237,9 +260,17 @@
             ze_sw = 211
             ze_sh = 914
         } else if (zonger.length == z_dis[2]) {
-            ze_sw = 550
-            ze_sh = 613
+            var S_L = parseInt(document.getElementById("S_L").value);
+            ze_sw = S_L
+            ze_sh = 592
+            s_width = S_L
         } else if (zonger.length == z_dis[3]) {
+            ze_sw = s_width
+            ze_sh = 592
+        } else if (zonger.length == z_dis[4]) {
+            ze_sw = s_width
+            ze_sh = 592
+        } else if (zonger.length == z_dis[5]) {
             ze_sw = 718
             ze_sh = 914
         }
@@ -250,6 +281,7 @@
         image.onload = () => {
             ctx.drawImage(image, ze_sw, ze_sh);
             ze_sw += image.width
+            s_width += image.width
             loadImageZE(zonger)
         }
     }
