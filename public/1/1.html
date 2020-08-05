@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图像处理</title>
+
+
+</head>
+<style>
+    .pos_fixed {
+        position: fixed;
+        top: 20px;
+        right: 10px;
+    }
+
+    .row {
+        margin-top: 10px
+    }
+</style>
+
+<body>
+
+    <canvas id="canvas"></canvas>
+    <div id="main">
+        <div class="row">
+            电源类型
+            <select id="bat">
+                <option value="battery0">battery0</option>
+                <option value="battery1">battery1</option>
+                <!-- <option value="battery2">battery2</option> -->
+                <!-- <option value="battery3">battery3</option> -->
+            </select>
+        </div>
+        <div class="row">
+            信息
+            <input type="checkbox" name="msg" value="qq" />qq
+            <input type="checkbox" name="msg" value="58" />58
+            <input type="checkbox" name="msg" value="wg" />wg
+            <input type="checkbox" name="msg" value="hello" />hello
+            <input type="checkbox" name="msg" value="wx" />wx
+        </div>
+        <div class="row">
+            金额
+            <input type="text" id="amount" />
+        </div>
+        <div class="row">
+            <button onclick="drawAndShareImage()">更新</button>
+        </div>
+
+        <div class="row">
+            <input id="flow" type="checkbox" onclick="setFlow()">悬浮</input>
+        </div>
+    </div>
+</body>
+<script src="../core.js"></script>
+
+<script>
+    function setFlow() {
+        var checked = document.getElementById("flow").checked;
+        if (!checked) {
+            document.getElementById("main").className = ''
+        } else {
+            document.getElementById("main").className = 'pos_fixed'
+        }
+    }
+    var imageList = [], sys_time, digist, msg = [], z_dis = []
+    //常量部分
+    var suffix = ".jpg", prefix = ''
+    var sys_point = { sw: 46, sh: 26 }
+    var date = { sw: 67, sh: 558 }
+    var time = { sw: 307, sh: 558 }
+    var amount_point = { sw: 65, sh: 376 }
+
+    var canvas = document.getElementById("canvas");
+    var context = canvas.getContext("2d");
+
+    //公共变量
+    var sw, sh, dis = 0
+
+    function setData() {
+        imageList = [], zonger = [], z_dis = [], prefix = ''
+        sw = amount_point.sw, sh = amount_point.sh
+        var current = new Date()
+        let now = dateFormat("YYYY-mm-dd HH:MM:SS", current)
+        if (current.getHours() >= 12) {
+            current.setHours(current.getHours() - 12)
+        }
+        sys_time = dateFormat("HH:MM", current)
+
+        // var amount = ""
+        var amount = document.getElementById("amount").value;
+        amount = amount ? amount : "1450123.87"
+        amount = formatCurrency(amount)
+        digist = amount.match(/./g)
+        z_dis.push(digist.length)
+        var flag = true//整数位上的0
+        digist.forEach(item => {
+            // if (flag && item == '0') {
+            //     imageList.push("40_0")
+            //     return
+            // }
+            if (item == ',') {
+                item = 'dou'
+            }
+            if (item == '.') {
+                item = 'dian'
+                flag = false
+            }
+
+            imageList.push(item)
+        })
+
+        z_dis.push(sys_time.length)
+        for (let i = 0; i < sys_time.length; i++) {
+            const e = sys_time[i] == ':' ? 'mao' : sys_time[i];
+            imageList.push(e)
+        }
+
+
+        //建设银行时间点
+        var count = 0
+        for (let i = 0; i < now.length; i++) {
+            const e = now[i] == '-' ? 'pie' : now[i] == ':' ? 'mao' : now[i];
+            if (e != ' ') {
+                imageList.push(e)
+                count++
+            }
+        }
+        z_dis.push(count)
+        for (let i = z_dis.length - 2; i >= 0; i--) {
+            z_dis[i] = z_dis[i + 1] + z_dis[i]
+        }
+        msg = ["wx", "qq"]
+        var msgList = document.getElementsByName("msg");
+        msgList.forEach(item => {
+            if (item.checked) {
+                msg.push(item.value)
+            }
+        })
+        msg = shuffle(msg)
+
+    }
+
+
+
+
+
+    function loadImage(imageList) {
+        if (imageList.length == 0) {
+
+            return
+        }
+        if (imageList.length == z_dis[1]) {
+            sw = sys_point.sw
+            sh = sys_point.sh
+            prefix = 'sys/'
+        }
+
+        if (imageList.length == 18) {
+            sw = date.sw
+            sh = date.sh
+            prefix = 'time/'
+        } else if (imageList.length == 8) {
+            sw = time.sw
+            sh = time.sh
+            prefix = 'time/'
+        }
+
+        var item = imageList.shift()
+        var image = new Image();
+        image.src = prefix + item + suffix
+        image.onload = () => {
+            context.drawImage(image, sw, sh);
+            sw += image.width + (prefix == 'time/' ? 3 : 0)
+            loadImage(imageList)
+        }
+    }
+
+    function drawAndShareImage() {
+
+
+        setData()
+
+        var myImage = new Image();
+        myImage.src = prefix + "./main" + suffix;    //背景图片  你自己本地的图片或者在线图片
+        myImage.crossOrigin = 'Anonymous';
+
+        var up = new Image();
+        up.src = prefix + "./up" + suffix;    //信号图列
+        up.crossOrigin = 'Anonymous';
+
+        var battery = new Image();
+        var bat = document.getElementById("bat").value;
+        bat = bat ? bat : "battery0"
+        battery.src = prefix + "battery/" + bat + suffix;    //背景图片  你自己本地的图片或者在线图片
+        battery.crossOrigin = 'Anonymous';
+
+
+
+        var other = msg.map(item => {
+            var otherImage = new Image()
+            otherImage.src = "other/" + item + suffix;
+            otherImage.crossOrigin = 'Anonymous';
+            return otherImage
+        })
+
+        myImage.onload = function () {
+            canvas.width = myImage.width;
+            canvas.height = myImage.height;
+            context.drawImage(myImage, 0, 0);
+            context.drawImage(up, 826, 21);
+            context.drawImage(battery, 826 + up.width, 21);
+            var otherWidth = 163
+            for (let i = 0; i < other.length; i++) {
+                const e = other[i];
+                context.drawImage(e, otherWidth, 20);
+                otherWidth += e.width + 16
+            }
+            loadImage(imageList)
+        }
+    }
+    drawAndShareImage()
+
+
+</script>
+
+
+
+</html>
