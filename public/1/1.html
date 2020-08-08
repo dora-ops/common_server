@@ -23,7 +23,7 @@
     <div style="margin-bottom: 100px">
         <canvas id="canvas"></canvas>
     </div>
-    
+
     <div id="main" class="pos_fixed">
         <div class="row">
             电源类型
@@ -52,7 +52,7 @@
         </div>
 
         <div class="row">
-              
+
             <!-- <input id="flow" type="checkbox" onclick="setFlow()">隐藏</input> -->
         </div>
     </div>
@@ -60,18 +60,28 @@
 <script src="../core.js"></script>
 
 <script>
-   var saveFile = function(data, filename){
+    var saveFile = function (data, filename) {
         var save_link = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
         save_link.href = data;
         save_link.download = filename;
-       
+
         var event = document.createEvent('MouseEvents');
         event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
         save_link.dispatchEvent(event);
     }
-    function download(){
-        var dataURL = canvas.toDataURL("image/png");
-        saveFile(dataURL,'1.png');
+    function download() {
+        canvas.toBlob(function (blob) {
+
+            var a = document.createElement("a");
+            var body = document.getElementsByTagName("body");
+            document.body.appendChild(a);
+            a.download = "img" + ".jpg";
+            a.href = window.URL.createObjectURL(blob);
+
+            a.click();
+            body.removeChild("a");
+
+        });
     }
     function setFlow() {
         var checked = document.getElementById("flow").checked;
