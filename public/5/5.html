@@ -20,7 +20,8 @@
 <body>
 
     <canvas id="pic"></canvas>
-    <div id="main">
+    <img id="img" />
+    <div id="main" class="pos_fixed">
         <div class="row">
             电源类型
             <select id="bat">
@@ -48,21 +49,24 @@
        
         <div class="row">
             <button onclick="drawAndShareImage()">更新</button>
+            <input id="flow" type="checkbox" onclick="setFlow()" style="margin-left: 20px">转图片</input>
         </div>
-        <div class="row">
-            <input id="flow" type="checkbox" onclick="setFlow()">悬浮</input>
-        </div>
+        
     </div>
 </body>
 <script src="../core.js"></script>
 <script>
 
-    function setFlow() {
+   function setFlow() {
         var checked = document.getElementById("flow").checked;
+        var img = document.getElementById('img')
         if (!checked) {
-            document.getElementById("main").className = ''
+            document.getElementById("pic").style.display = 'inline'
+            img.scr = ""
         } else {
-            document.getElementById("main").className = 'pos_fixed'
+
+            img.src = pic.toDataURL("image/png");
+            document.getElementById("pic").style.display = 'none'
         }
     }
 

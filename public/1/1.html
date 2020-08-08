@@ -49,31 +49,26 @@
         </div>
         <div class="row">
             <button onclick="drawAndShareImage()">更新</button>
-            <button onclick="download()" style="float: right;">下载</button>
+            <input id="flow" type="checkbox" onclick="setFlow()" style="margin-left: 20px">转图片</input>
+           
         </div>
 
-        <div class="row">
-
-            <!-- <input id="flow" type="checkbox" onclick="setFlow()">隐藏</input> -->
-        </div>
     </div>
 </body>
 <script src="../core.js"></script>
 
 <script>
-    
-    function download() {
-        var img = document.getElementById('img')
-        img.src = canvas.toDataURL("image/png");
-        document.getElementById("canvas").style.display = 'none'
-    }
+
     function setFlow() {
         var checked = document.getElementById("flow").checked;
+        var img = document.getElementById('img')
         if (!checked) {
-            document.getElementById("main").className = ''
+            document.getElementById("canvas").style.display = 'inline'
+            img.scr = ""
         } else {
-            // document.getElementById("main").className = 'pos_fixed'
-            document.getElementById("main").style.display = 'none'
+
+            img.src = canvas.toDataURL("image/png");
+            document.getElementById("canvas").style.display = 'none'
         }
     }
     var imageList = [], sys_time, digist, msg = [], z_dis = []
