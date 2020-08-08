@@ -51,7 +51,7 @@
         </div>
 
         <div class="row">
-            <input id="flow" type="checkbox" onclick="setFlow()">悬浮</input>
+            <input id="flow" type="checkbox" onclick="setFlow()">隐藏</input>
         </div>
     </div>
 </body>
@@ -63,7 +63,8 @@
         if (!checked) {
             document.getElementById("main").className = ''
         } else {
-            document.getElementById("main").className = 'pos_fixed'
+            // document.getElementById("main").className = 'pos_fixed'
+            document.getElementById("main").style.display = 'none'
         }
     }
     var imageList = [], sys_time, digist, msg = [], z_dis = []
