@@ -19,6 +19,15 @@ function dateFormat(fmt, date) {
     return fmt;
 }
 
+function getPhoneTime(current) {
+    if (current.getHours() >= 13) {
+        current.setHours(current.getHours() - 12)
+    } else if (current.getHours() == 0) {
+        current.setHours(12)
+    }
+    return dateFormat("HH:MM", current)
+}
+
 //制保留2位小数，如：2，会在2后面补上00.即2.00 
  function toDecimal2(x) {
     var f = parseFloat(x);

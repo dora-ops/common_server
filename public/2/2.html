@@ -67,10 +67,8 @@
     function setData() {
         var current = new Date()
         let now = dateFormat("YYYY-mm-dd HH:MM:SS", current)
-        if (current.getHours() >= 12) {
-            current.setHours(current.getHours() - 12)
-        }
-        sys_time = dateFormat("HH:MM", current)
+
+        sys_time = getPhoneTime(current)
 
         for (let i = 0; i < sys_time.length; i++) {
             const e = sys_time[i] == ':' ? 'mao' : sys_time[i];
