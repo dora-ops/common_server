@@ -64,9 +64,10 @@
         var img = document.getElementById('img')
         if (!checked) {
             document.getElementById("canvas").style.display = 'inline'
+            img.style.display = 'none'
             img.scr = ""
         } else {
-
+            img.style.display = 'inline'
             img.src = canvas.toDataURL("image/png");
             document.getElementById("canvas").style.display = 'none'
         }
@@ -90,7 +91,7 @@
         sw = amount_point.sw, sh = amount_point.sh
         var current = new Date()
         let now = dateFormat("YYYY-mm-dd HH:MM:SS", current)
-       
+
         sys_time = getPhoneTime(current)
 
         // var amount = ""
